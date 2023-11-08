@@ -31,21 +31,25 @@ services:
         command: sh /root/scripts/start-validator-client.sh
         restart: on-failure
         stop_grace_period: 3m
-    geth:
-        image: ethereum/client-go:${GETH_VERSION}
-        entrypoint: /bin/sh
-        volumes:
-            - ./geth-data:/root/.ethereum
-            - ${GETH_ANCIENT_CHAINDATA_DIR}:/root/ancient-data
-            - ./scripts:/root/scripts:ro
-            - ./jwttoken:/root/jwttoken:ro
-        ports:
-            - 30303:30303/tcp
-            - 30303:30303/udp
-        expose:
-            - 8551
-        env_file: .env
-        command: /root/scripts/start-geth.sh
-        restart: on-failure
-        stop_grace_period: 3m
+    nethermind:
+      container_name: nethermind
+      image: nethermind/nethermind:latest
+      restart: always
+      command: --config dotblox
+      stop_grace_period: 1m
+      ports:
+        - "8545:8545"
+        - "8546:8546"
+        - "30303:30303/tcp"
+        - "30303:30303/udp"
+      volumes:
+        - ./genesis:/config/genesis
+        - ./dotblox.cfg:/nethermind/configs/dotblox.cfg
+        - ./static-nodes.json:/nethermind/Data/static-nodes.json
+        - ./nethermind_db:/nethermind/nethermind_db
+        - ./keystore:/nethermind/keystore
+      environment:
+        NETHERMIND_CONFIG : dotblox
+      logging:
+        driver: "local"
 
